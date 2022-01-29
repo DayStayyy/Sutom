@@ -44,24 +44,24 @@ let myDictionary = {
     "y" : 321685,
     "z" : 321777,
 }
-
-const fs = require('fs');
-const writeStream = fs.createWriteStream('WordList.txt');
-const pathName = writeStream.path;
+console.log(myDictionary)
+// const fs = require('fs');
+// const writeStream = fs.createWriteStream('WordList.txt');
+// const pathName = writeStream.path;
 
 // for (const [key, value] of Object.entries(myDictionary)) {
 //     writeStream.write(`${value} : ${key}\n`);
 // }
 
-words.forEach(value => writeStream.write(`${value}\n`));
+// words.forEach(value => writeStream.write(`${value}\n`));
 
 
-writeStream.on('finish', () => {
-   console.log(`wrote all the array data to file ${pathName}`);
-});
+// writeStream.on('finish', () => {
+//    console.log(`wrote all the array data to file ${pathName}`);
+// });
 
-writeStream.on('error', (err) => {
-    console.error(`There is an error writing the file ${pathName} => ${err}`)
-});
+// writeStream.on('error', (err) => {
+//     console.error(`There is an error writing the file ${pathName} => ${err}`)
+// });
 
-writeStream.end();
+// writeStream.end();
