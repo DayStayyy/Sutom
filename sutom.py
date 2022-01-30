@@ -1,6 +1,10 @@
+from re import T
+import re
+from tkinter import E, PIESLICE
+from turtle import pen
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
-
+import time
 
 
 
@@ -33,6 +37,7 @@ myDictionary = {
     "Y" : 335625,
     "Z" : 335717,
 }
+alphabet = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"]
 
 class webScraping() :
 
@@ -40,7 +45,7 @@ class webScraping() :
         self.wordLength = 0
         self.hiddenWord = ""
         self.firstLetter = ""
-        self.wordListLength = []
+        self.wordListCheck = []
         self.wordListLetter = []
         self.badLetter = []
         self.goodLetter = []
@@ -52,25 +57,50 @@ class webScraping() :
         op = webdriver.ChromeOptions()
         self.driver = webdriver.Chrome(service=ser, options=op)
     
-        self.driver.get("https://sutom.nocle.fr/")
-    
     def getHiddenWord(self):
 
-        rows = self.driver.find_elements_by_xpath(f"""//table/tr[{self.loop}]/td""")
-        print("== JAMBON")
-        print([elm for elm in rows])
-        print("=== BEURE")
+        rows = self.driver.find_elements_by_xpath(f"//table/tr[{self.loop}]/td")
+        for elm in rows :
+            if(elm.get_attribute("class") == "bien-place resultat" or elm.get_attribute("class") == "mal-place resultat") :
+                self.goodLetter.append(elm.text)
+            else :
+                self.badLetter.append(elm.text)
 
 
 
-        text = self.driver.find_element_by_xpath(f"//table/tr[{self.loop}]").text
-        for i in text :
-            if(i != "." and i != " ") :
-                self.wordNoComplete = i 
-    
+        text = self.driver.find_element_by_xpath(f"//table/tr[{self.loop + 1}]")
+        text = text.text
+        i = 0
+        for letter in text :
+            if(letter == " ") :
+                continue
+            if(letter != ".") :
+                self.wordNoComplete[i] = letter
+            i += 1 
+
+    def newWord(self) :
+        newWordListLetter = []
+        for word in self.wordListCheck :
+            if(self.wordIsOk(word)) :
+                newWordListLetter.append(word)
+        self.wordListCheck = newWordListLetter
+
+    def wordIsOk(self,word) :
+        for letter in self.goodLetter :
+            if word.find(letter.lower()) == -1 :
+                return False
+
+        for i,letter in enumerate(word) :
+            if(self.badLetter.count(letter.upper()) != 0) :
+                return False
+            if(self.wordNoComplete[i] != "" ) :
+                if(self.wordNoComplete[i].lower() != letter) :
+                    return False
+
+        return True
+                
     def getFirstLetter(self):
         text = self.driver.find_element_by_xpath(f"//table/tr[{self.loop}]").text
-        print(text)
         self.firstLetter = text[0]
         for i in text :
             if(i != "." and i != " ") :
@@ -78,7 +108,6 @@ class webScraping() :
             elif(i == ".") :
                 self.wordNoComplete.append("")
         self.wordNoComplete[0] = text[0]
-        print(self.wordNoComplete)
         
 
     def getLength(self):
@@ -97,23 +126,17 @@ class webScraping() :
             list_of_lists.append(stripped_line)
         return list_of_lists
 
-    def createWordListLength(self,lines) :
+    def createWordListCheck(self,lines) :
         i = myDictionary[self.firstLetter]
-        while i < 297250 :
+        if(self.firstLetter == "Z") :
+            limite = 336513
+        else :
+            limite = myDictionary[alphabet[alphabet.index(self.firstLetter.lower())+1].upper()]
+        while i < limite :
             if(len(lines[i]) == self.wordLength) :
-                self.wordListLength.append(lines[i])
+                self.wordListCheck.append(lines[i])
             i+=1
-    def test(self, lines):
-        final_arr = []
-        start = "."
-        for index,item in enumerate(lines) :
-            if(item[0] != start) :
-                final_arr.append(index)
-                start = item[0]
-        alphabet = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"];
 
-        for i,item in enumerate(alphabet) :
-            print("\""+ item.capitalize() + "\" : " + str(final_arr[i]))
 
     def writeWord(self,word):
         for i in word :
@@ -123,15 +146,21 @@ class webScraping() :
         self.driver.get("https://sutom.nocle.fr/")
         self.getLength()
         self.getFirstLetter()
-        # self.getHiddenWord()
         
-        
-        self.createWordListLength(self.openFiles())
-        self.writeWord(self.wordListLength[0])
+        self.createWordListCheck(self.openFiles())
+        self.writeWord(self.wordListCheck[0])
         self.inputText("_entree")
 
-        # self.getFirstLetter()
-        self.getHiddenWord()
+        while self.loop < 6 :
+            self.driver.refresh()
+            time.sleep(1)  
+            self.getHiddenWord()
+            self.loop += 1
+            self.newWord()
+            self.writeWord(self.wordListCheck[0])
+            self.inputText("_entree")
+
+        # self.driver.close()
 
 
 new = webScraping()
