@@ -64,7 +64,8 @@ class webScraping() :
             if(elm.get_attribute("class") == "bien-place resultat" or elm.get_attribute("class") == "mal-place resultat") :
                 self.goodLetter.append(elm.text)
             else :
-                self.badLetter.append(elm.text)
+                if(self.goodLetter.count(elm.text) == 0 ) :
+                    self.badLetter.append(elm.text)
 
 
 
@@ -150,6 +151,7 @@ class webScraping() :
         self.createWordListCheck(self.openFiles())
         self.writeWord(self.wordListCheck[0])
         self.inputText("_entree")
+        self.wordListCheck.remove(self.wordListCheck[0])
 
         while self.loop < 6 :
             self.driver.refresh()
@@ -159,6 +161,7 @@ class webScraping() :
             self.newWord()
             self.writeWord(self.wordListCheck[0])
             self.inputText("_entree")
+            self.wordListCheck.remove(self.wordListCheck[0])
 
         # self.driver.close()
 
